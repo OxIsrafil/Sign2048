@@ -128,7 +128,7 @@ export default function GameBoard() {
       });
 
       const res = await client.createAttestation({
-        schemaId: "onchain_evm_8453_0x46976",
+        schemaId: "0x46976",
         recipients: [user.wallet.address],
         data: [{ name: "score", type: "string", value: score.toString() }],
         indexingValue: user.wallet.address,
