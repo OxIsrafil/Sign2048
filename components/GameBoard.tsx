@@ -121,20 +121,20 @@ export default function GameBoard() {
   };
 
 const submitScore = async () => {
-  if (!user?.wallet?.address || !score || isNaN(score)) {
+  if (!user?.wallet?.address || typeof score !== "number" || isNaN(score)) {
     console.warn("⚠️ Invalid score or wallet address:", score, user?.wallet?.address);
     return;
   }
 
-  console.log("📤 Submitting score to Sign Protocol:", score);
-
   try {
+    console.log("📤 Submitting score to Sign Protocol:", score);
+
     const client = new SignProtocolClient(SpMode.OnChain, {
       chain: EvmChains.base,
     });
 
     const res = await client.createAttestation({
-      schemaId: "onchain_evm_8453_0x46976", // ✅ Full schema ID (not short ID)
+      schemaId: "onchain_evm_8453_0x46976", // Full schema ID required
       recipients: [user.wallet.address],
       data: [
         {
@@ -149,7 +149,9 @@ const submitScore = async () => {
     const attestationId = res.attestationId;
     console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
 
-    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/scores`, {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
+
+    const response = await fetch(`${backendUrl}/api/scores`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -159,13 +161,16 @@ const submitScore = async () => {
       }),
     });
 
-    console.log("✅ Score saved to backend DB");
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Backend error: ${errText}`);
+    }
 
+    console.log("✅ Score saved to backend DB");
   } catch (err) {
     console.error("❌ Failed to submit score:", err);
   }
 };
-
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
@@ -217,7 +222,7 @@ const submitScore = async () => {
   };
 
   const shareToX = () => {
-    const text = `I scored ${score} in 2048 on @Sign Game built by @OxIsrafil.\nPowered by Sign Lab & @sign protocol\nPlay & beat me if you can: https://2048sign.vercel.app/`;
+    const text = `I scored ${score} in 2048 on @Sign Game built by @OxIsrafil.\n\nPowered by Sign Lab & @sign protocol.\nPlay & beat me if you can: https://2048sign.vercel.app/`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   };
