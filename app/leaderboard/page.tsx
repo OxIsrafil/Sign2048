@@ -15,7 +15,7 @@ export default function Leaderboard() {
   useEffect(() => {
     const fetchScores = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/scores/top");
+        const res = await fetch("https://sign2048-backend.onrender.com/api/scores/top");
         const data = await res.json();
         setScores(data);
       } catch (err) {
