@@ -134,7 +134,7 @@ const submitScore = async () => {
     });
 
     const res = await client.createAttestation({
-      schemaId: "onchain_evm_8453_0x46976", // Full schema ID required
+      schemaId: BigInt("0x46976").toString(),
       recipients: [user.wallet.address],
       data: [
         {
