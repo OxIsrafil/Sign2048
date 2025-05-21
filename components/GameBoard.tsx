@@ -120,40 +120,52 @@ export default function GameBoard() {
     setTimeout(() => containerRef.current?.focus(), 100);
   };
 
-  const submitScore = async () => {
-    if (!user?.wallet?.address) return;
-    try {
-      const client = new SignProtocolClient(SpMode.OnChain, {
-        chain: EvmChains.base,
-      });
+const submitScore = async () => {
+  if (!user?.wallet?.address || !score || isNaN(score)) {
+    console.warn("⚠️ Invalid score or wallet address:", score, user?.wallet?.address);
+    return;
+  }
 
-      const res = await client.createAttestation({
-        schemaId: "0x46976",
-        recipients: [user.wallet.address],
-        data: [{ name: "score", type: "string", value: score.toString() }],
-        indexingValue: user.wallet.address,
-      });
+  console.log("📤 Submitting score to Sign Protocol:", score);
 
-      const attestationId = res.attestationId;
-      console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
+  try {
+    const client = new SignProtocolClient(SpMode.OnChain, {
+      chain: EvmChains.base,
+    });
 
-      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/scores`, {
+    const res = await client.createAttestation({
+      schemaId: "onchain_evm_8453_0x46976", // ✅ Full schema ID (not short ID)
+      recipients: [user.wallet.address],
+      data: [
+        {
+          name: "score",
+          type: "string",
+          value: score.toString(),
+        },
+      ],
+      indexingValue: user.wallet.address,
+    });
 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address: user.wallet.address,
-          score,
-          attestationId,
-        }),
-      });
+    const attestationId = res.attestationId;
+    console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
 
-      console.log("✅ Score saved to backend DB");
+    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/scores`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        address: user.wallet.address,
+        score,
+        attestationId,
+      }),
+    });
 
-    } catch (err) {
-      console.error("❌ Failed to submit score:", err);
-    }
-  };
+    console.log("✅ Score saved to backend DB");
+
+  } catch (err) {
+    console.error("❌ Failed to submit score:", err);
+  }
+};
+
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
