@@ -137,7 +137,8 @@ export default function GameBoard() {
       const attestationId = res.attestationId;
       console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
 
-      await fetch("http://localhost:5000/api/scores", {
+      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/scores`, {
+
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -204,7 +205,7 @@ export default function GameBoard() {
   };
 
   const shareToX = () => {
-    const text = `I scored ${score} in Sign2048 🔶\nPowered by @signprotocol\nPlay it: https://sign2048.vercel.app`;
+    const text = `I scored ${score} in 2048 on @Sign Game built by @OxIsrafil.\nPowered by Sign Lab & @sign protocol\nPlay & beat me if you can: https://2048sign.vercel.app/`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   };
