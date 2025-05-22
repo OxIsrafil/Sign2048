@@ -120,48 +120,53 @@ export default function GameBoard() {
     setTimeout(() => containerRef.current?.focus(), 100);
   };
 
-  const submitScore = async () => {
-    const wallet = user?.wallet?.address;
-    const safeScore = typeof score === "number" && !isNaN(score) ? score.toString() : "";
+const submitScore = async () => {
+  const wallet = user?.wallet?.address;
+  const safeScore = typeof score === "number" && !isNaN(score) ? String(score) : null;
 
-    if (!wallet || !safeScore) {
-      console.warn("⚠️ Invalid score or wallet address:", score, wallet);
-      return;
-    }
+  if (!wallet || !safeScore) {
+    console.warn("⚠️ Invalid score or wallet address:", score, wallet);
+    return;
+  }
 
-    console.log("📤 Submitting score to Sign Protocol:", safeScore);
-    console.log("🔥 Wallet:", wallet);
-    console.log("🔥 Score:", safeScore);
-    console.log("🔥 SignClient:", signClient);
+  console.log("📤 Submitting score to Sign Protocol:", safeScore);
+  console.log("🔥 Wallet:", wallet);
+  console.log("🔥 Score:", safeScore);
+  console.log("🔥 SignClient:", signClient);
 
-    try {
-      const res = await (signClient as any).createAttestation({
+  try {
+    const res = await (signClient as any).createAttestation({
+      schemaId: "0x4697e", // ✅ must be hex only
+      recipients: [wallet],
+      fields: {
+        score: safeScore,
+      },
+      indexingValue: wallet,
+    });
 
-        schemaId: "0x4697e", // ✅ use only hex
-        recipients: [wallet],
-        fields: {
-          score: safeScore,
-        },
-        indexingValue: wallet,
-      });
+    const attestationId = res.attestationId;
+    console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
 
-      const attestationId = res.attestationId;
-      console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
 
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
-      const response = await fetch(`${backendUrl}/api/scores`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: wallet, score: parseInt(safeScore), attestationId }),
-      });
+    const response = await fetch(`${backendUrl}/api/scores`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        address: wallet,
+        score: parseInt(safeScore),
+        attestationId,
+      }),
+    });
 
-      if (!response.ok) throw new Error(await response.text());
+    if (!response.ok) throw new Error(await response.text());
 
-      console.log("✅ Score saved to backend DB");
-    } catch (err) {
-      console.error("❌ Failed to submit score:", err);
-    }
-  };
+    console.log("✅ Score saved to backend DB");
+  } catch (err) {
+    console.error("❌ Failed to submit score:", err);
+  }
+};
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
