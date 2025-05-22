@@ -20,16 +20,20 @@ export async function attestScore({
   console.log("🔥 SignClient:", signClient);
 
   try {
-    const fields = {
-      score: safeScore,
-    };
+    const data = [
+      {
+        name: "score",
+        type: "string",
+        value: safeScore,
+      },
+    ];
 
-    console.log("🔥 Fields going to Sign SDK:", fields);
+    console.log("🔥 Data going to Sign SDK:", data);
 
     const res = await (signClient as any).createAttestation({
       schemaId: "0x4697e", // ✅ hex ID for on-chain
       recipients: [address],
-      fields,
+      data, // ✅ this works in latest SDK
       indexingValue: address,
     });
 
