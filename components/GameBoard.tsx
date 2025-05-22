@@ -125,25 +125,29 @@ const submitScore = async () => {
   const safeScore = score !== undefined && !isNaN(score) ? String(score) : null;
 
   if (!wallet || !safeScore) {
-  console.warn("⚠️ Invalid wallet or score:", wallet, score);
-  return;
-}
+    console.warn("⚠️ Invalid wallet or score:", wallet, score);
+    return;
+  }
 
-  console.log("📤 Submitting score to Sign Protocol:", safeScore);
-  console.log("🔥 Wallet:", wallet);
-  console.log("🔥 Score:", safeScore);
+  console.log("📤 Submitting score to Sign Protocol...");
+  console.log("🔥 Wallet:", wallet, typeof wallet);
+  console.log("🔥 Raw Score:", score, typeof score);
+  console.log("🔥 safeScore:", safeScore, typeof safeScore);
   console.log("🔥 SignClient:", signClient);
 
   try {
-    const res = await (signClient as any).createAttestation({
-  schemaId: "0x4697e", // ✅ hex format
-  recipients: [wallet],
-  fields: {
-    score: safeScore, // ✅ already validated as string
-  },
-  indexingValue: wallet,
-});
+    const fields = {
+      score: safeScore,
+    };
 
+    console.log("🔥 Fields going to Sign SDK:", fields);
+
+    const res = await (signClient as any).createAttestation({
+      schemaId: "0x4697e", // ✅ hex format for onchain
+      recipients: [wallet],
+      fields, // ✅ pass separately
+      indexingValue: wallet,
+    });
 
     const attestationId = res.attestationId;
     console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
@@ -168,6 +172,7 @@ const submitScore = async () => {
     console.error("❌ Failed to submit score:", err);
   }
 };
+
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
