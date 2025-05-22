@@ -137,7 +137,7 @@ export default function GameBoard() {
     try {
       const res = await (signClient as any).createAttestation({
 
-        schemaId: "onchain_evm_8453_0x4697e",
+        schemaId: "0x4697e", // ✅ use only hex
         recipients: [wallet],
         fields: {
           score: safeScore,

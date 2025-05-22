@@ -9,7 +9,7 @@ export async function attestScore({
 }) {
   try {
     const result = await (signClient as any).createAttestation({
-      schemaId: "0x4697e", // ✅ Correct schema ID (no prefix)
+      schemaId: "0x4697e", // ✅ use only hex
       recipients: [address],
       fields: {
         score: score.toString(), // ✅ Must be string
