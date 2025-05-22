@@ -135,9 +135,15 @@ const submitScore = async () => {
     });
 
     const res = await client.createAttestation({
-      schemaId: "0x4697e", // ✅ correct hex only
+      schemaId: "0x4697e", // ✅ your schema ID (only hex part)
       recipients: [user.wallet.address],
-      data: [{"name":"score","type":"string"}],
+      data: [
+        {
+          name: "score",       // ✅ EXACTLY as defined in schema
+          type: "string",      // ✅ schema expects string
+          value: String(score) // ensure it's string
+        },
+      ],
       indexingValue: user.wallet.address,
     });
 
@@ -165,7 +171,6 @@ const submitScore = async () => {
     console.error("❌ Failed to submit score:", err);
   }
 };
-
 
 
   const handleMove = (dir: string) => {
