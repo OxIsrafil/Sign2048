@@ -120,6 +120,7 @@ export default function GameBoard() {
     setTimeout(() => containerRef.current?.focus(), 100);
   };
 
+
 const submitScore = async () => {
   if (!user?.wallet?.address || typeof score !== "number" || isNaN(score)) {
     console.warn("⚠️ Invalid score or wallet address:", score, user?.wallet?.address);
@@ -134,12 +135,12 @@ const submitScore = async () => {
     });
 
     const res = await client.createAttestation({
-      schemaId: BigInt("0x46976").toString(), // ✅ FULL Schema ID
+      schemaId: "0x46976", // ✅ Use hexadecimal string as per official documentation
       recipients: [user.wallet.address],
       data: [
         {
-          name: "score",         // ✅ Must match schema exactly
-          type: "string",        // ✅ Type must be string
+          name: "score",
+          type: "string",
           value: score.toString(),
         },
       ],
@@ -171,7 +172,6 @@ const submitScore = async () => {
     console.error("❌ Failed to submit score:", err);
   }
 };
-
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
