@@ -9,15 +9,11 @@ export async function attestScore({
 }) {
   try {
     const res = await (signClient as any).createAttestation({
-      schemaId: "0x4697e", // ✅ must be hex-only for onchain
+      schemaId: "0x4697e", // ✅ hex ID for on-chain
       recipients: [address],
-      data: [
-        {
-          name: "score",
-          type: "string",
-          value: score.toString(),
-        },
-      ],
+      fields: {
+        score: score.toString(), // ✅ must be string
+      },
       indexingValue: address,
     });
 
