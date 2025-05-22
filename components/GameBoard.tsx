@@ -134,7 +134,21 @@ const submitScore = async () => {
       chain: EvmChains.base,
     });
 
-const res = await client.createAttestation({
+console.log("💡 Payload:", {
+  schemaId: "0x4697e",
+  recipients: [user.wallet.address],
+  data: [
+    {
+      name: "score",
+      type: "string",
+      value: score.toString(),
+    },
+  ],
+  indexingValue: user.wallet.address,
+});
+
+
+  const res = await client.createAttestation({
   schemaId: "0x4697e", // ✅ only hex part
   recipients: [user.wallet.address],
   data: [
