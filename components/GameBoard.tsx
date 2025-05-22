@@ -122,45 +122,33 @@ export default function GameBoard() {
 
 
 const submitScore = async () => {
-  if (!user?.wallet?.address || typeof score !== "number" || isNaN(score)) {
-    console.warn("⚠️ Invalid score or wallet address:", score, user?.wallet?.address);
+  const wallet = user?.wallet?.address;
+  const safeScore = typeof score === "number" && !isNaN(score) ? score.toString() : "";
+
+  if (!wallet || !safeScore) {
+    console.warn("⚠️ Invalid score or wallet address:", score, wallet);
     return;
   }
 
-  try {
-    console.log("📤 Submitting score to Sign Protocol:", score);
+  console.log("📤 Submitting score to Sign Protocol:", safeScore);
 
+  try {
     const client = new SignProtocolClient(SpMode.OnChain, {
       chain: EvmChains.base,
     });
 
-console.log("💡 Payload:", {
-  schemaId: "0x4697e",
-  recipients: [user.wallet.address],
-  data: [
-    {
-      name: "score",
-      type: "string",
-      value: score.toString(),
-    },
-  ],
-  indexingValue: user.wallet.address,
-});
-
-
-  const res = await client.createAttestation({
-  schemaId: "0x4697e", // ✅ only hex part
-  recipients: [user.wallet.address],
-  data: [
-    {
-      name: "score",       // ✅ must match schema
-      type: "string",      // ✅ must match schema
-      value: score.toString(),
-    },
-  ],
-  indexingValue: user.wallet.address,
-});
-
+    const res = await client.createAttestation({
+      schemaId: "0x4697e", // Confirmed schema
+      recipients: [wallet],
+      data: [
+        {
+          name: "score",
+          type: "string",
+          value: safeScore,
+        },
+      ],
+      indexingValue: wallet,
+    });
 
     const attestationId = res.attestationId;
     console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
@@ -169,17 +157,10 @@ console.log("💡 Payload:", {
     const response = await fetch(`${backendUrl}/api/scores`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        address: user.wallet.address,
-        score,
-        attestationId,
-      }),
+      body: JSON.stringify({ address: wallet, score: parseInt(safeScore), attestationId }),
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Backend error: ${errText}`);
-    }
+    if (!response.ok) throw new Error(await response.text());
 
     console.log("✅ Score saved to backend DB");
   } catch (err) {
