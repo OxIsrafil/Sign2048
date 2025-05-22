@@ -137,13 +137,7 @@ const submitScore = async () => {
     const res = await client.createAttestation({
       schemaId: "0x4697e", // ✅ correct hex only
       recipients: [user.wallet.address],
-      data: [
-        {
-          name: "score",
-          type: "string",
-          value: score.toString(),
-        },
-      ],
+      data: [{"name":"score","type":"string"}],
       indexingValue: user.wallet.address,
     });
 
