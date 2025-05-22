@@ -121,7 +121,7 @@ export default function GameBoard() {
   };
 
 const submitScore = async () => {
-  if (!user?.wallet?.address || typeof score !== "number" || isNaN(score) || score < 1) {
+  if (!user?.wallet?.address || typeof score !== "number" || isNaN(score)) {
     console.warn("⚠️ Invalid score or wallet address:", score, user?.wallet?.address);
     return;
   }
@@ -133,8 +133,9 @@ const submitScore = async () => {
       chain: EvmChains.base,
     });
 
+    // Only use the hex part of schemaId (without prefix)
     const res = await client.createAttestation({
-      schemaId: "onchain_evm_8453_0x46976", // ✅ Correct format
+      schemaId: BigInt("0x46976"), // ✅ Only hex part
       recipients: [user.wallet.address],
       data: [
         {
@@ -171,6 +172,7 @@ const submitScore = async () => {
     console.error("❌ Failed to submit score:", err);
   }
 };
+
 
 
   const handleMove = (dir: string) => {
