@@ -135,7 +135,7 @@ const submitScore = async () => {
 
     // Only use the hex part of schemaId (without prefix)
     const res = await client.createAttestation({
-      schemaId: BigInt("0x46976"), // ✅hex part
+      schemaId: "180214", // plain string
       recipients: [user.wallet.address],
       data: [
         {
