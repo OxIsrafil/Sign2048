@@ -122,12 +122,12 @@ export default function GameBoard() {
 
 const submitScore = async () => {
   const wallet = user?.wallet?.address;
-  const safeScore = typeof score === "number" && !isNaN(score) ? String(score) : null;
+  const safeScore = score !== undefined && !isNaN(score) ? String(score) : null;
 
   if (!wallet || !safeScore) {
-    console.warn("⚠️ Invalid score or wallet address:", score, wallet);
-    return;
-  }
+  console.warn("⚠️ Invalid wallet or score:", wallet, score);
+  return;
+}
 
   console.log("📤 Submitting score to Sign Protocol:", safeScore);
   console.log("🔥 Wallet:", wallet);
