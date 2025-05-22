@@ -127,23 +127,24 @@ const submitScore = async () => {
     return;
   }
 
-  console.log("📤 Submitting score to Sign Protocol:", score);
-
   try {
+    console.log("📤 Submitting score to Sign Protocol:", score);
+
     const client = new SignProtocolClient(SpMode.OnChain, {
       chain: EvmChains.base,
     });
 
-    const schemaId = BigInt("0x46976").toString(); // Convert bigint to string
+    // ✅ Use full string format
+    const schemaId = "onchain_evm_8453_0x46976";
 
     const res = await client.createAttestation({
-      schemaId,
+      schemaId, // ✅ use full string ID here
       recipients: [user.wallet.address],
       data: [
         {
-          name: "score",
-          type: "string",
-          value: score.toString(), // ✅ Must be string
+          name: "score",       // ✅ exact field name as schema
+          type: "string",      // ✅ exact type as schema
+          value: score.toString(), // ✅ value must be string
         },
       ],
       indexingValue: user.wallet.address,
@@ -174,6 +175,7 @@ const submitScore = async () => {
     console.error("❌ Failed to submit score:", err);
   }
 };
+
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
