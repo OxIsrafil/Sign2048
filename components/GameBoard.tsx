@@ -121,7 +121,7 @@ export default function GameBoard() {
   };
 
 const submitScore = async () => {
-  if (!user?.wallet?.address || typeof score !== "number" || isNaN(score)) {
+  if (!user?.wallet?.address || typeof score !== "number" || isNaN(score) || score < 1) {
     console.warn("⚠️ Invalid score or wallet address:", score, user?.wallet?.address);
     return;
   }
@@ -134,7 +134,7 @@ const submitScore = async () => {
     });
 
     const res = await client.createAttestation({
-      schemaId: BigInt("0x46976").toString(),
+      schemaId: "onchain_evm_8453_0x46976", // ✅ Correct format
       recipients: [user.wallet.address],
       data: [
         {
@@ -171,6 +171,7 @@ const submitScore = async () => {
     console.error("❌ Failed to submit score:", err);
   }
 };
+
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
