@@ -133,14 +133,13 @@ const submitScore = async () => {
       chain: EvmChains.base,
     });
 
-    // Only use the hex part of schemaId (without prefix)
     const res = await client.createAttestation({
-      schemaId: "180214", // plain string
+      schemaId: "onchain_evm_8453_0x46976", // ✅ FULL Schema ID
       recipients: [user.wallet.address],
       data: [
         {
-          name: "score",
-          type: "string",
+          name: "score",         // ✅ Must match schema exactly
+          type: "string",        // ✅ Type must be string
           value: score.toString(),
         },
       ],
@@ -172,7 +171,6 @@ const submitScore = async () => {
     console.error("❌ Failed to submit score:", err);
   }
 };
-
 
 
   const handleMove = (dir: string) => {
