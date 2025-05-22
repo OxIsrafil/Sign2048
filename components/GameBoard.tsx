@@ -130,11 +130,14 @@ export default function GameBoard() {
     }
 
     console.log("📤 Submitting score to Sign Protocol:", safeScore);
+    console.log("🔥 Wallet:", wallet);
+    console.log("🔥 Score:", safeScore);
+    console.log("🔥 SignClient:", signClient);
 
     try {
       const res = await (signClient as any).createAttestation({
 
-        schemaId: "0x4697e",
+        schemaId: "onchain_evm_8453_0x4697e",
         recipients: [wallet],
         fields: {
           score: safeScore,
