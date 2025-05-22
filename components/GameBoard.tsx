@@ -134,17 +134,16 @@ const submitScore = async () => {
       chain: EvmChains.base,
     });
 
-    // ✅ Use full string format
-    const schemaId = "onchain_evm_8453_0x46976";
+    const schemaId = "0x46976"; // ✅ Just the hex part as string
 
     const res = await client.createAttestation({
-      schemaId, // ✅ use full string ID here
+      schemaId, // ✅ pass as plain string
       recipients: [user.wallet.address],
       data: [
         {
-          name: "score",       // ✅ exact field name as schema
-          type: "string",      // ✅ exact type as schema
-          value: score.toString(), // ✅ value must be string
+          name: "score",
+          type: "string",
+          value: score.toString(), // must be string (your schema expects string)
         },
       ],
       indexingValue: user.wallet.address,
@@ -175,7 +174,6 @@ const submitScore = async () => {
     console.error("❌ Failed to submit score:", err);
   }
 };
-
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
