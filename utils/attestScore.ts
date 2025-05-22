@@ -8,17 +8,21 @@ export async function attestScore({
   score: number;
 }) {
   try {
-    const result = await (signClient as any).createAttestation({
-      schemaId: "0x4697e", // ✅ use only hex
+    const res = await (signClient as any).createAttestation({
+      schemaId: "0x4697e", // ✅ must be hex-only for onchain
       recipients: [address],
-      fields: {
-        score: score.toString(), // ✅ Must be string
-      },
+      data: [
+        {
+          name: "score",
+          type: "string",
+          value: score.toString(),
+        },
+      ],
       indexingValue: address,
     });
 
-    console.log("✅ Attestation success:", result.attestationId);
-    return result.attestationId;
+    console.log("✅ Attestation success:", res.attestationId);
+    return res.attestationId;
   } catch (err) {
     console.error("❌ Attestation failed:", err);
     return null;

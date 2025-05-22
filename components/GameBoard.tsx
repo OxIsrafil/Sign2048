@@ -136,13 +136,17 @@ const submitScore = async () => {
 
   try {
     const res = await (signClient as any).createAttestation({
-      schemaId: "0x4697e", // ✅ must be hex only
-      recipients: [wallet],
-      fields: {
-        score: safeScore,
-      },
-      indexingValue: wallet,
-    });
+  schemaId: "0x4697e",
+  recipients: [wallet],
+  data: [
+    {
+      name: "score",
+      type: "string",
+      value: safeScore,
+    },
+  ],
+  indexingValue: wallet,
+});
 
     const attestationId = res.attestationId;
     console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
