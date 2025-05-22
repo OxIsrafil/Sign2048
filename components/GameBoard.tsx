@@ -135,7 +135,7 @@ const submitScore = async () => {
     });
 
     const res = await client.createAttestation({
-      schemaId: "0x4697e", // ✅ use plain string (hex only, no prefix!)
+      schemaId: "0x4697e", // ✅ correct hex only
       recipients: [user.wallet.address],
       data: [
         {
@@ -151,7 +151,6 @@ const submitScore = async () => {
     console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
-
     const response = await fetch(`${backendUrl}/api/scores`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -172,6 +171,7 @@ const submitScore = async () => {
     console.error("❌ Failed to submit score:", err);
   }
 };
+
 
 
   const handleMove = (dir: string) => {
