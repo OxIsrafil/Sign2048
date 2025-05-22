@@ -127,21 +127,23 @@ const submitScore = async () => {
     return;
   }
 
-  try {
-    console.log("📤 Submitting score to Sign Protocol:", score);
+  console.log("📤 Submitting score to Sign Protocol:", score);
 
+  try {
     const client = new SignProtocolClient(SpMode.OnChain, {
       chain: EvmChains.base,
     });
 
+    const schemaId = BigInt("0x46976").toString(); // Convert bigint to string
+
     const res = await client.createAttestation({
-      schemaId: "0x46976", // ✅ Use hexadecimal string as per official documentation
+      schemaId,
       recipients: [user.wallet.address],
       data: [
         {
           name: "score",
           type: "string",
-          value: score.toString(),
+          value: score.toString(), // ✅ Must be string
         },
       ],
       indexingValue: user.wallet.address,
