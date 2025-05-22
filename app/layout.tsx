@@ -7,6 +7,9 @@ import AuthButton from "../components/AuthButton";
 export const metadata: Metadata = {
   title: "Sign 2048",
   description: "2048 game powered by Sign Protocol",
+  icons: {
+    icon: "https://imgur.com/JBqj35H.png", // ✅ Your Imgur favicon
+  },
 };
 
 export default function RootLayout({

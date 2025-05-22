@@ -15,19 +15,25 @@ export default function Leaderboard() {
   useEffect(() => {
     const fetchScores = async () => {
       try {
-        const res = await fetch("https://sign2048-backend.onrender.com/api/scores/top");
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/scores/leaderboard`
+        );
         const data = await res.json();
         setScores(data);
       } catch (err) {
         console.error("❌ Failed to fetch leaderboard:", err);
       }
     };
+
     fetchScores();
   }, []);
 
+  const shorten = (addr: string) =>
+    addr.slice(0, 6) + "..." + addr.slice(-4);
+
   return (
     <main className="min-h-screen bg-orangeDynasty text-white flex flex-col items-center py-10 font-press">
-      <h1 className="text-2xl animate-pulse drop-shadow-[0_3px_3px_rgba(0,0,0,0.4)] mb-10">
+      <h1 className="text-3xl animate-pulse drop-shadow-[0_3px_3px_rgba(0,0,0,0.4)] mb-10">
         Top Scores on SiGN2048
       </h1>
 
@@ -40,7 +46,9 @@ export default function Leaderboard() {
                 className="flex justify-between items-center pt-2"
               >
                 <span className="text-xl font-bold">#{idx + 1}</span>
-                <span className="text-sm truncate w-[55%]">{entry.address}</span>
+                <span className="text-sm truncate w-[55%]">
+                  {shorten(entry.address)}
+                </span>
                 <span className="bg-orangeDynasty text-white px-4 py-1 rounded-full shadow text-lg">
                   {entry.score}
                 </span>
@@ -48,7 +56,9 @@ export default function Leaderboard() {
             ))}
           </ul>
         ) : (
-          <p className="text-center text-1xl text-orange-600">No scores yet. Be the first to play!</p>
+          <p className="text-center text-1xl text-orange-600">
+            No scores yet. Be the first to play!
+          </p>
         )}
       </div>
     </main>

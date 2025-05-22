@@ -8,16 +8,12 @@ export async function attestScore({
   score: number;
 }) {
   try {
-    const result = await signClient.createAttestation({
-      schemaId: "onchain_evm_8453_0x46976", // live schema ID here
+    const result = await (signClient as any).createAttestation({
+      schemaId: "0x4697e", // ✅ Correct schema ID (no prefix)
       recipients: [address],
-      data: [
-        {
-          name: "score",
-          type: "string",
-          value: score.toString(),
-        },
-      ],
+      fields: {
+        score: score.toString(), // ✅ Must be string
+      },
       indexingValue: address,
     });
 

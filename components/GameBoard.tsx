@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/board.css";
 import { usePrivy } from "@privy-io/react-auth";
-import { SignProtocolClient, EvmChains, SpMode } from "@ethsign/sp-sdk";
+import { signClient } from "../utils/signClient"; // ✅ use shared client
 import Link from "next/link";
 
 type Tile = number;
@@ -120,54 +120,45 @@ export default function GameBoard() {
     setTimeout(() => containerRef.current?.focus(), 100);
   };
 
+  const submitScore = async () => {
+    const wallet = user?.wallet?.address;
+    const safeScore = typeof score === "number" && !isNaN(score) ? score.toString() : "";
 
-const submitScore = async () => {
-  const wallet = user?.wallet?.address;
-  const safeScore = typeof score === "number" && !isNaN(score) ? score.toString() : "";
+    if (!wallet || !safeScore) {
+      console.warn("⚠️ Invalid score or wallet address:", score, wallet);
+      return;
+    }
 
-  if (!wallet || !safeScore) {
-    console.warn("⚠️ Invalid score or wallet address:", score, wallet);
-    return;
-  }
+    console.log("📤 Submitting score to Sign Protocol:", safeScore);
 
-  console.log("📤 Submitting score to Sign Protocol:", safeScore);
+    try {
+      const res = await (signClient as any).createAttestation({
 
-  try {
-    const client = new SignProtocolClient(SpMode.OnChain, {
-      chain: EvmChains.base,
-    });
-
-    const res = await client.createAttestation({
-      schemaId: "0x4697e", // Confirmed schema
-      recipients: [wallet],
-      data: [
-        {
-          name: "score",
-          type: "string",
-          value: safeScore,
+        schemaId: "0x4697e",
+        recipients: [wallet],
+        fields: {
+          score: safeScore,
         },
-      ],
-      indexingValue: wallet,
-    });
+        indexingValue: wallet,
+      });
 
-    const attestationId = res.attestationId;
-    console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
+      const attestationId = res.attestationId;
+      console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
-    const response = await fetch(`${backendUrl}/api/scores`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address: wallet, score: parseInt(safeScore), attestationId }),
-    });
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
+      const response = await fetch(`${backendUrl}/api/scores`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: wallet, score: parseInt(safeScore), attestationId }),
+      });
 
-    if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) throw new Error(await response.text());
 
-    console.log("✅ Score saved to backend DB");
-  } catch (err) {
-    console.error("❌ Failed to submit score:", err);
-  }
-};
-
+      console.log("✅ Score saved to backend DB");
+    } catch (err) {
+      console.error("❌ Failed to submit score:", err);
+    }
+  };
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);

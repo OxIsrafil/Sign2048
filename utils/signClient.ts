@@ -1,13 +1,11 @@
-import { SignProtocolClient, EvmChains, SpMode } from "@ethsign/sp-sdk";
+import { SignProtocolClient, EvmChains, SpMode, OnChainClientOptions } from "@ethsign/sp-sdk";
+import { ethers } from "ethers";
 
-export const signClient = new SignProtocolClient(
-  SpMode.OnChain, // Specify the mode as OnChain
-  {
-    chain: EvmChains.base, // ✅ MAINNET BASE
-  } // Provide appropriate options for OnChainClientOptions
-);
+export let signClient: SignProtocolClient;
 
-
-// import { SignProtocolClient, EvmChains } from "@ethsign/sp-sdk";
-
-// export const signClient = new SignProtocolClient({ chain: EvmChains.base, // ✅ MAINNET BASE });
+export function initSignClient(signer: ethers.Signer) {
+  signClient = new SignProtocolClient(SpMode.OnChain, {
+    chain: EvmChains.base,
+    signer,
+  } as OnChainClientOptions);
+}
