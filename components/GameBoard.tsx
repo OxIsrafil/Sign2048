@@ -134,19 +134,19 @@ const submitScore = async () => {
       chain: EvmChains.base,
     });
 
-    const schemaId = "0x46976"; // ✅ Just the hex part as string
+    const schemaId = "0x46976"; // ✅ Schema ID (plain hex string only)
 
     const res = await client.createAttestation({
-      schemaId, // ✅ pass as plain string
+      schemaId, // ✅ no BigInt, no prefix
       recipients: [user.wallet.address],
       data: [
         {
-          name: "score",
-          type: "string",
-          value: score.toString(), // must be string (your schema expects string)
-        },
+          name: "score",         // ✅ exactly as defined in schema
+          type: "string",        // ✅ schema expects string
+          value: score.toString() // ✅ ensure it's a string!
+        }
       ],
-      indexingValue: user.wallet.address,
+      indexingValue: user.wallet.address
     });
 
     const attestationId = res.attestationId;
@@ -174,6 +174,7 @@ const submitScore = async () => {
     console.error("❌ Failed to submit score:", err);
   }
 };
+
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
