@@ -134,18 +134,19 @@ const submitScore = async () => {
       chain: EvmChains.base,
     });
 
-    const res = await client.createAttestation({
-      schemaId: "0x4697e", // ✅ your schema ID (only hex part)
-      recipients: [user.wallet.address],
-      data: [
-        {
-          name: "score",       // ✅ EXACTLY as defined in schema
-          type: "string",      // ✅ schema expects string
-          value: String(score) // ensure it's string
-        },
-      ],
-      indexingValue: user.wallet.address,
-    });
+const res = await client.createAttestation({
+  schemaId: "0x4697e", // ✅ only hex part
+  recipients: [user.wallet.address],
+  data: [
+    {
+      name: "score",       // ✅ must match schema
+      type: "string",      // ✅ must match schema
+      value: score.toString(),
+    },
+  ],
+  indexingValue: user.wallet.address,
+});
+
 
     const attestationId = res.attestationId;
     console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);

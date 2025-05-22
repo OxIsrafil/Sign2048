@@ -1,28 +1,23 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "target": "ES2022",                          // 🔥 Better async/await & ESM
+    "module": "ESNext",                          // ✅ Required for native ESM
+    "moduleResolution": "Node",                 // ✅ Works with modern packages
+    "lib": ["dom", "dom.iterable", "esnext"],
+
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
+
+    "types": ["node"],                          // ✅ Fixes Node.js type issues
+    "allowSyntheticDefaultImports": true        // ✅ Helps with ESM interop
   },
   "include": [
     "next-env.d.ts",
@@ -30,7 +25,5 @@
     "**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
