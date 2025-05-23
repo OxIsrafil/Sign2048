@@ -143,7 +143,7 @@ export default function GameBoard() {
           {
             name: "score",
             type: "string",
-            value: score.toString(),
+            value: safeScore,
           },
         ],
         indexingValue: wallet,

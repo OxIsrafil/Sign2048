@@ -27,7 +27,7 @@ export async function attestScore({
         {
           name: "score",
           type: "string",
-          value: score.toString(),
+          value: safeScore,
         },
       ],
       indexingValue: address,

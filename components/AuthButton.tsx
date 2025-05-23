@@ -2,27 +2,32 @@
 
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useEffect } from "react";
-import { initSignClient } from "../utils/signClient"; // ✅ path depends on your structure
+import { initSignClient } from "../utils/signClient"; // ✅ ensure correct path
 import { ethers } from "ethers";
 
 export default function AuthButton() {
   const { ready, authenticated, login, logout, user } = usePrivy();
   const { wallets } = useWallets();
 
-  // ✅ Initialize signClient after wallet connection
- useEffect(() => {
-  const wallet = wallets?.[0];
+  // ✅ Re-init signClient with signer after login and wallet available
+  useEffect(() => {
+    const setupSignClient = async () => {
+      const wallet = wallets?.[0];
+      if (!wallet || !authenticated) return;
 
-  if (wallet) {
-    wallet.getEthereumProvider().then((ethereumProvider) => {
-      const provider = new ethers.BrowserProvider(ethereumProvider);
-      provider.getSigner().then((signer) => {
-        initSignClient(signer);
-      });
-    });
-  }
-}, [wallets]);
+      try {
+        const ethereumProvider = await wallet.getEthereumProvider();
+        const provider = new ethers.BrowserProvider(ethereumProvider);
+        const signer = await provider.getSigner();
 
+        initSignClient(signer); // ✅ inject signer into Sign SDK
+      } catch (err) {
+        console.error("❌ Failed to initialize SignClient signer:", err);
+      }
+    };
+
+    setupSignClient();
+  }, [wallets, authenticated]);
 
   if (!ready) return null;
 
