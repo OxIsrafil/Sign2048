@@ -1,12 +1,13 @@
+/* Base tile style */
 .tile {
-  width: 80px;
-  height: 80px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   display: flex;
   justify-content: center;
   align-items: center;
   font-family: 'Press Start 2P', cursive;
   font-weight: bold;
-  font-size: 18px;
+  font-size: clamp(12px, 4vw, 18px);
   border-radius: 10px;
   color: #ff6b00;
   background-color: white;
@@ -17,11 +18,18 @@
   transform: scale(1);
 }
 
+/* Ensure the grid resizes properly */
+.grid {
+  width: 100%;
+  max-width: 340px; /* Full width on mobile */
+}
+
+/* Filled background override */
 .filled {
   background-color: white;
 }
 
-/* Game tile pop-in when added */
+/* Game tile pop-in animation */
 @keyframes pop-in {
   0% {
     transform: scale(0.6);
@@ -36,7 +44,7 @@
   }
 }
 
-/* Optional shake effect (can apply .animate-shake to the board) */
+/* Shake animation */
 @keyframes shake {
   0% { transform: translateX(0); }
   25% { transform: translateX(-5px); }

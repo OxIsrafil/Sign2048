@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import "../styles/board.css";
 import { usePrivy } from "@privy-io/react-auth";
 import { signClient } from "../utils/signClient";
+import { isAddress, checksumAddress } from "viem";
 import Link from "next/link";
 
 type Tile = number;
@@ -30,14 +31,11 @@ const addRandomTile = (board: Tile[][]): Tile[][] => {
   return board;
 };
 
-const transpose = (board: Tile[][]) =>
-  board[0].map((_, i) => board.map((row) => row[i]));
+const transpose = (board: Tile[][]) => board[0].map((_, i) => board.map((row) => row[i]));
 
-const reverse = (board: Tile[][]) =>
-  board.map((row) => [...row].reverse());
+const reverse = (board: Tile[][]) => board.map((row) => [...row].reverse());
 
-const compressRow = (row: Tile[]) =>
-  row.filter((x) => x !== 0).concat(Array(SIZE).fill(0)).slice(0, SIZE);
+const compressRow = (row: Tile[]) => row.filter((x) => x !== 0).concat(Array(SIZE).fill(0)).slice(0, SIZE);
 
 const mergeRow = (row: Tile[]): [Tile[], number] => {
   let score = 0;
@@ -121,65 +119,44 @@ export default function GameBoard() {
   };
 
   const submitScore = async () => {
-  const wallet = user?.wallet?.address;
-  const rawScore = score;
-  const safeScore =
-    rawScore !== undefined && !isNaN(rawScore) ? String(rawScore) : null;
+    const rawScore = score;
+    const safeScore = rawScore !== undefined && !isNaN(rawScore) ? String(rawScore) : null;
+    const rawWallet = user?.wallet?.address;
+    const wallet = rawWallet && isAddress(rawWallet) ? checksumAddress(rawWallet as `0x${string}`) : null;
 
-  if (!wallet || !safeScore) {
-    console.warn("⚠️ Invalid wallet or score:", { wallet, rawScore });
-    return;
-  }
-
-  console.log("📤 Submitting score to Sign Protocol...");
-  console.log("🔥 Wallet:", wallet, typeof wallet);
-  console.log("🔥 Raw Score:", rawScore, typeof rawScore);
-  console.log("🔥 safeScore:", safeScore, typeof safeScore);
-  console.log("🔥 SignClient:", signClient);
-
-  try {
-    const payload = {
-      schemaId: "0x46982", // ✅ schema that uses `fields`
-      recipients: [wallet],
-      fields: {
-        score: safeScore, // ✅ should be a plain object like { score: "1234" }
-      },
-      indexingValue: wallet,
-    };
-
-    console.log("📦 Attestation payload:", JSON.stringify(payload));
-
-    const res = await (signClient as any).createAttestation(payload);
-
-    const attestationId = res?.attestationId;
-    if (!attestationId) throw new Error("Attestation failed: Missing ID");
-
-    console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
-
-    const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
-
-    const response = await fetch(`${backendUrl}/api/scores`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        address: wallet,
-        score: parseInt(safeScore),
-        attestationId,
-      }),
-    });
-
-    if (!response.ok) {
-      const msg = await response.text();
-      throw new Error(`Backend error: ${msg}`);
+    if (!wallet || !safeScore) {
+      console.warn("⚠️ Wallet not ready or score invalid:", { wallet, score });
+      alert("Please wait until your wallet is fully connected to submit score.");
+      return;
     }
 
-    console.log("✅ Score saved to backend DB");
-  } catch (err) {
-    console.error("❌ Failed to submit score:", err);
-  }
-};
+    try {
+      const res = await signClient.createAttestation({
+        schemaId: "0x46982",
+        recipients: [wallet],
+        data: { score: safeScore },
+        indexingValue: wallet,
+      });
 
+      const attestationId = res?.attestationId;
+      if (!attestationId) throw new Error("Attestation failed: Missing ID");
+
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
+      const response = await fetch(`${backendUrl}/api/scores`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address: wallet,
+          score: parseInt(safeScore),
+          attestationId,
+        }),
+      });
+
+      if (!response.ok) throw new Error(await response.text());
+    } catch (err) {
+      console.error("❌ Failed to submit score:", err);
+    }
+  };
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
@@ -187,7 +164,6 @@ export default function GameBoard() {
       const updatedBoard = addRandomTile(newBoard);
       setBoard(updatedBoard);
       setScore((prev) => prev + gained);
-
       if (isGameOver(updatedBoard) && !submitted) {
         setSubmitted(true);
         setGameOver(true);
@@ -218,7 +194,6 @@ export default function GameBoard() {
     const touch = e.changedTouches[0];
     const dx = touch.clientX - touchStart.current.x;
     const dy = touch.clientY - touchStart.current.y;
-
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
     if (Math.max(absX, absY) > 30) {
@@ -236,29 +211,40 @@ export default function GameBoard() {
     window.open(url, "_blank");
   };
 
+  const isGoogleOnly =
+    !!user &&
+    !!user.google?.email &&
+    (!user.wallet?.address || !isAddress(user.wallet.address));
+
   useEffect(() => {
     init();
   }, []);
 
   return (
     <div
-      className="flex flex-col items-center justify-center mt-6 outline-none relative"
+      className="flex flex-col items-center justify-center mt-6 mb-10 outline-none relative px-4"
       ref={containerRef}
       tabIndex={0}
       onKeyDown={handleKey}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <h1 className="text-2xl text-white animate-pulse drop-shadow-[0_3px_3px_rgba(0,0,0,0.4)] mb-2 font-press">2048 on SiGN</h1>
-      <h2 className="text-1xl font-bold text-white mb-2 font-press">Score: {score}</h2>
+      <h1 className="text-2xl text-white animate-pulse drop-shadow-md mb-2 mt-10 font-press text-center">
+        2048 on SiGN
+      </h1>
+
+      <h2 className="text-xl font-bold text-white mb-2 font-press text-center">
+        Score: {score}
+      </h2>
+
       <Link href="/leaderboard">
         <button className="mb-4 px-4 py-2 bg-white text-orange-600 font-bold rounded shadow hover:bg-gray-100 transition">
           View Leaderboard
         </button>
       </Link>
 
-      <div className="relative">
-        <div className="grid grid-cols-4 gap-2 bg-orange-700 p-4 rounded-lg relative z-0 transition-all duration-200">
+      <div className="relative w-full max-w-md mx-auto">
+        <div className="grid grid-cols-4 gap-2 bg-orange-700 p-4 rounded-lg transition-all duration-200">
           {board.flat().map((val, i) => (
             <div
               key={i}
@@ -275,7 +261,7 @@ export default function GameBoard() {
 
         {gameOver && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black bg-opacity-60 animate-fade-in">
-            <h2 className="text-1xl font-bold text-grey-500 mb-4 font-press drop-shadow-[0_2px_2px_rgba(255,255,255,0.7)]">
+            <h2 className="text-xl font-bold text-gray-200 mb-4 font-press">
               Game Over!
             </h2>
             <button

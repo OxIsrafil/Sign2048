@@ -2,7 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base Styles */
 body {
-  background-color: #fff8f0;
-  font-family: 'Poppins', sans-serif;
+  @apply bg-bgDark text-white font-arcade min-h-screen;
+}
+
+/* Font Overrides */
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+.font-arcade {
+  font-family: 'Press Start 2P', system-ui, sans-serif;
 }

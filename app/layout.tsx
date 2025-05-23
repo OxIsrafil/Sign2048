@@ -2,13 +2,14 @@ import "./globals.css";
 import type { Metadata } from "next";
 import PrivyAuthProvider from "../components/PrivyProvider";
 import AuthButton from "../components/AuthButton";
+import Footer from "../components/Footer";
 
-// Google Fonts CDN for Press Start 2P
+// ✅ Metadata config for SEO and favicon
 export const metadata: Metadata = {
   title: "Sign 2048",
   description: "2048 game powered by Sign Protocol",
   icons: {
-    icon: "https://imgur.com/JBqj35H.png", // ✅ Your Imgur favicon
+    icon: "https://imgur.com/JBqj35H.png",
   },
 };
 
@@ -29,6 +30,7 @@ export default function RootLayout({
         <PrivyAuthProvider>
           <AuthButton />
           {children}
+          <Footer />
         </PrivyAuthProvider>
       </body>
     </html>

@@ -2,30 +2,27 @@ import {
   SignProtocolClient,
   EvmChains,
   SpMode,
-  OnChainClientOptions,
+  type OnChainClientOptions,
 } from "@ethsign/sp-sdk";
 import { ethers } from "ethers";
 
-// Global instance shared across the app
 export let signClient: SignProtocolClient;
 
 /**
- * Initialize SignProtocolClient with injected signer from wallet.
+ * Initializes the global SignProtocolClient instance using a signer.
  */
 export function initSignClient(signer: ethers.Signer) {
   if (!signer) {
-    console.error("❌ Signer is undefined. SignClient not initialized.");
+    console.error("❌ No signer provided to initSignClient.");
     return;
   }
 
-  const options: OnChainClientOptions = {
-    chain: EvmChains.base, // ✅ Mainnet Base
-  };
+  const options = {
+    chain: EvmChains.base,
+    signer, // ✅ casted inline to avoid TypeScript error
+  } as OnChainClientOptions;
 
   signClient = new SignProtocolClient(SpMode.OnChain, options);
-  (options as any).signer = signer; // Add the signer to the options with type assertion
 
-  signClient = new SignProtocolClient(SpMode.OnChain, options);
-
-  console.log("✅ SignClient initialized with signer:", signClient);
+  console.log("✅ SignClient successfully initialized with signer.");
 }

@@ -11,17 +11,25 @@ interface ScoreEntry {
 
 export default function Leaderboard() {
   const [scores, setScores] = useState<ScoreEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchScores = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/scores/leaderboard`
-        );
+        const backendUrl =
+          process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
+
+        const res = await fetch(`${backendUrl}/api/scores/leaderboard`);
+        if (!res.ok) throw new Error("Backend error");
+
         const data = await res.json();
         setScores(data);
-      } catch (err) {
+      } catch (err: any) {
         console.error("❌ Failed to fetch leaderboard:", err);
+        setError("Something went wrong while loading the leaderboard.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -33,12 +41,18 @@ export default function Leaderboard() {
 
   return (
     <main className="min-h-screen bg-orangeDynasty text-white flex flex-col items-center py-10 font-press">
-      <h1 className="text-3xl animate-pulse drop-shadow-[0_3px_3px_rgba(0,0,0,0.4)] mb-10">
-        Top Scores on SiGN2048
-      </h1>
+      <h1 className="text-2xl text-center font-bold animate-pulse mt-10 drop-shadow-[0_3px_3px_rgba(0,0,0,0.4)] mb-10 font-press leading-snug px-4 sm:px-0">
+  Top Scorers of <br className="sm:hidden" /> SiGN 2048
+</h1>
 
       <div className="w-full max-w-3xl bg-white rounded-xl shadow-2xl px-6 py-8 animate-fade-in text-orange-800">
-        {scores.length > 0 ? (
+        {loading ? (
+          <p className="text-center text-orange-600 animate-pulse">
+            Loading leaderboard...
+          </p>
+        ) : error ? (
+          <p className="text-center text-red-600 font-semibold">{error}</p>
+        ) : scores.length > 0 ? (
           <ul className="divide-y divide-orange-200 space-y-4">
             {scores.map((entry, idx) => (
               <li
@@ -56,7 +70,7 @@ export default function Leaderboard() {
             ))}
           </ul>
         ) : (
-          <p className="text-center text-1xl text-orange-600">
+          <p className="text-center text-orange-600">
             No scores yet. Be the first to play!
           </p>
         )}
