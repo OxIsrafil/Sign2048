@@ -121,57 +121,53 @@ export default function GameBoard() {
   };
 
   const submitScore = async () => {
-    const wallet = user?.wallet?.address;
-    const safeScore = score !== undefined && !isNaN(score) ? String(score) : null;
+  const wallet = user?.wallet?.address;
+  const safeScore = score !== undefined && !isNaN(score) ? String(score) : null;
 
-    if (!wallet || !safeScore) {
-      console.warn("⚠️ Invalid wallet or score:", wallet, score);
-      return;
-    }
+  if (!wallet || !safeScore) {
+    console.warn("⚠️ Invalid wallet or score:", wallet, score);
+    return;
+  }
 
-    console.log("📤 Submitting score to Sign Protocol...");
-    console.log("🔥 Wallet:", wallet, typeof wallet);
-    console.log("🔥 Raw Score:", score, typeof score);
-    console.log("🔥 safeScore:", safeScore, typeof safeScore);
-    console.log("🔥 SignClient:", signClient);
+  console.log("📤 Submitting score to Sign Protocol...");
+  console.log("🔥 Wallet:", wallet, typeof wallet);
+  console.log("🔥 Raw Score:", score, typeof score);
+  console.log("🔥 safeScore:", safeScore, typeof safeScore);
+  console.log("🔥 SignClient:", signClient);
 
-    try {
-      const res = await (signClient as any).createAttestation({
-        schemaId: "0x4697e",
-        recipients: [wallet],
-        fields: [
-          {
-            name: "score",
-            type: "string",
-            value: safeScore,
-          },
-        ],
-        indexingValue: wallet,
-      });
+  try {
+    const res = await (signClient as any).createAttestation({
+      schemaId: "0x46982", // ✅ updated schema
+      recipients: [wallet],
+      fields: {
+        score: safeScore, // ✅ as object, not array
+      },
+      indexingValue: wallet,
+    });
 
-      const attestationId = res.attestationId;
-      console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
+    const attestationId = res.attestationId;
+    console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
 
-      const backendUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
 
-      const response = await fetch(`${backendUrl}/api/scores`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address: wallet,
-          score: parseInt(safeScore),
-          attestationId,
-        }),
-      });
+    const response = await fetch(`${backendUrl}/api/scores`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        address: wallet,
+        score: parseInt(safeScore),
+        attestationId,
+      }),
+    });
 
-      if (!response.ok) throw new Error(await response.text());
+    if (!response.ok) throw new Error(await response.text());
 
-      console.log("✅ Score saved to backend DB");
-    } catch (err) {
-      console.error("❌ Failed to submit score:", err);
-    }
-  };
+    console.log("✅ Score saved to backend DB");
+  } catch (err) {
+    console.error("❌ Failed to submit score:", err);
+  }
+};
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);

@@ -21,15 +21,11 @@ export async function attestScore({
 
   try {
     const res = await (signClient as any).createAttestation({
-      schemaId: "0x4697e", // ✅ hex format only
+      schemaId: "0x46982", // ✅ Correct schema for `fields` object
       recipients: [address],
-      fields: [
-        {
-          name: "score",
-          type: "string",
-          value: safeScore,
-        },
-      ],
+      fields: {
+        score: safeScore, // ✅ Must match schema format
+      },
       indexingValue: address,
     });
 
