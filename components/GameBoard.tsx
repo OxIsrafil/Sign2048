@@ -149,7 +149,7 @@ const submitScore = async () => {
     {
       name: "score",
       type: "string",
-      value: safeScore,
+      value: safeScore, // must be a string like "2256"
     },
   ],
   indexingValue: wallet,

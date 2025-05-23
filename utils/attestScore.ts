@@ -31,11 +31,17 @@ export async function attestScore({
     console.log("🔥 Data going to Sign SDK:", data);
 
     const res = await (signClient as any).createAttestation({
-      schemaId: "0x4697e", // ✅ hex ID for on-chain
-      recipients: [address],
-      data, // ✅ this works in latest SDK
-      indexingValue: address,
-    });
+  schemaId: "0x4697e",
+  recipients: [address], // or address
+  data: [
+    {
+      name: "score",
+      type: "string",
+      value: safeScore, // must be a string like "2256"
+    },
+  ],
+  indexingValue: address, // or address
+});
 
     console.log("✅ Attestation success:", res.attestationId);
     return res.attestationId;
