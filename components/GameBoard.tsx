@@ -133,6 +133,7 @@ export default function GameBoard() {
     console.log("🔥 Wallet:", wallet, typeof wallet);
     console.log("🔥 Raw Score:", score, typeof score);
     console.log("🔥 safeScore:", safeScore, typeof safeScore);
+    console.log("🔥 SignClient:", signClient);
 
     try {
       const res = await (signClient as any).createAttestation({
