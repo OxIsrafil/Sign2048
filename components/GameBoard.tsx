@@ -137,10 +137,10 @@ export default function GameBoard() {
 
   try {
     const res = await (signClient as any).createAttestation({
-      schemaId: "0x46982", // ✅ updated schema
+      schemaId: "0x46982", // ✅ Correct schema using fields
       recipients: [wallet],
       fields: {
-        score: safeScore, // ✅ as object, not array
+        score: safeScore, // ✅ Must be string and match schema exactly
       },
       indexingValue: wallet,
     });
@@ -168,6 +168,7 @@ export default function GameBoard() {
     console.error("❌ Failed to submit score:", err);
   }
 };
+
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);

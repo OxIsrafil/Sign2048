@@ -18,10 +18,14 @@ export function initSignClient(signer: ethers.Signer) {
     return;
   }
 
-  signClient = new SignProtocolClient(SpMode.OnChain, {
-    chain: EvmChains.base,
-    signer,
-  } as OnChainClientOptions);
+  const options: OnChainClientOptions = {
+    chain: EvmChains.base, // ✅ Mainnet Base
+  };
+
+  signClient = new SignProtocolClient(SpMode.OnChain, options);
+  (options as any).signer = signer; // Add the signer to the options with type assertion
+
+  signClient = new SignProtocolClient(SpMode.OnChain, options);
 
   console.log("✅ SignClient initialized with signer:", signClient);
 }
