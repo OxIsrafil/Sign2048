@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/board.css";
 import { usePrivy } from "@privy-io/react-auth";
-import { signClient } from "../utils/signClient"; // ✅ use shared client
+import { signClient } from "../utils/signClient";
 import Link from "next/link";
 
 type Tile = number;
@@ -96,7 +96,7 @@ const getTileColor = (value: number) => {
     256: "#edcc61",
     512: "#edc850",
     1024: "#edc53f",
-    2048: "#edc22e"
+    2048: "#edc22e",
   };
   return colors[value] || "#3c3a32";
 };
@@ -120,59 +120,57 @@ export default function GameBoard() {
     setTimeout(() => containerRef.current?.focus(), 100);
   };
 
-const submitScore = async () => {
-  const wallet = user?.wallet?.address;
-  const safeScore = score !== undefined && !isNaN(score) ? String(score) : null;
+  const submitScore = async () => {
+    const wallet = user?.wallet?.address;
+    const safeScore = score !== undefined && !isNaN(score) ? String(score) : null;
 
-  if (!wallet || !safeScore) {
-    console.warn("⚠️ Invalid wallet or score:", wallet, score);
-    return;
-  }
+    if (!wallet || !safeScore) {
+      console.warn("⚠️ Invalid wallet or score:", wallet, score);
+      return;
+    }
 
-  console.log("📤 Submitting score to Sign Protocol...");
-  console.log("🔥 Wallet:", wallet, typeof wallet);
-  console.log("🔥 Raw Score:", score, typeof score);
-  console.log("🔥 safeScore:", safeScore, typeof safeScore);
-  console.log("🔥 SignClient:", signClient);
+    console.log("📤 Submitting score to Sign Protocol...");
+    console.log("🔥 Wallet:", wallet, typeof wallet);
+    console.log("🔥 Raw Score:", score, typeof score);
+    console.log("🔥 safeScore:", safeScore, typeof safeScore);
 
-  try {
-    const fields = {
-      score: safeScore,
-    };
+    try {
+      const res = await (signClient as any).createAttestation({
+        schemaId: "0x4697e",
+        recipients: [wallet],
+        fields: [
+          {
+            name: "score",
+            type: "string",
+            value: safeScore,
+          },
+        ],
+        indexingValue: wallet,
+      });
 
-    console.log("🔥 Fields going to Sign SDK:", fields);
+      const attestationId = res.attestationId;
+      console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
 
-    const res = await (signClient as any).createAttestation({
-      schemaId: "0x4697e", // ✅ hex ID
-      recipients: [wallet],
-      fields, // ✅ not data!
-      indexingValue: wallet,
-    });
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
 
-    const attestationId = res.attestationId;
-    console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
+      const response = await fetch(`${backendUrl}/api/scores`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address: wallet,
+          score: parseInt(safeScore),
+          attestationId,
+        }),
+      });
 
-    const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "https://sign2048-backend.onrender.com";
+      if (!response.ok) throw new Error(await response.text());
 
-    const response = await fetch(`${backendUrl}/api/scores`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        address: wallet,
-        score: parseInt(safeScore),
-        attestationId,
-      }),
-    });
-
-    if (!response.ok) throw new Error(await response.text());
-
-    console.log("✅ Score saved to backend DB");
-  } catch (err) {
-    console.error("❌ Failed to submit score:", err);
-  }
-};
-
+      console.log("✅ Score saved to backend DB");
+    } catch (err) {
+      console.error("❌ Failed to submit score:", err);
+    }
+  };
 
   const handleMove = (dir: string) => {
     const [newBoard, moved, gained] = moveBoard(board, dir);
@@ -194,7 +192,7 @@ const submitScore = async () => {
       ArrowUp: "up",
       ArrowDown: "down",
       ArrowLeft: "left",
-      ArrowRight: "right"
+      ArrowRight: "right",
     };
     if (keys[e.key]) {
       e.preventDefault();

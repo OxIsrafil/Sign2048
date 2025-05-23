@@ -20,16 +20,16 @@ export async function attestScore({
   console.log("🔥 SignClient:", signClient);
 
   try {
-    const fields = {
-      score: safeScore,
-    };
-
-    console.log("🔥 Fields going to Sign SDK:", fields);
-
     const res = await (signClient as any).createAttestation({
-      schemaId: "0x4697e", // ✅ correct hex schema ID
+      schemaId: "0x4697e", // ✅ hex format only
       recipients: [address],
-      fields, // ✅ must use 'fields' for this schema
+      fields: [
+        {
+          name: "score",
+          type: "string",
+          value: safeScore,
+        },
+      ],
       indexingValue: address,
     });
 
