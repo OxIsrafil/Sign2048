@@ -136,20 +136,16 @@ const submitScore = async () => {
   console.log("🔥 SignClient:", signClient);
 
   try {
-    const data = [
-      {
-        name: "score",
-        type: "string",
-        value: safeScore,
-      },
-    ];
+    const fields = {
+      score: safeScore,
+    };
 
-    console.log("🔥 Data going to Sign SDK:", data);
+    console.log("🔥 Fields going to Sign SDK:", fields);
 
     const res = await (signClient as any).createAttestation({
-      schemaId: "0x4697e", // ✅ hex-only
+      schemaId: "0x4697e", // ✅ hex ID
       recipients: [wallet],
-      data, // ✅ now using proper SDK shape
+      fields, // ✅ not data!
       indexingValue: wallet,
     });
 
