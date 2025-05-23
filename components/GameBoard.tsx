@@ -122,30 +122,38 @@ export default function GameBoard() {
 
   const submitScore = async () => {
   const wallet = user?.wallet?.address;
-  const safeScore = score !== undefined && !isNaN(score) ? String(score) : null;
+  const rawScore = score;
+  const safeScore =
+    rawScore !== undefined && !isNaN(rawScore) ? String(rawScore) : null;
 
   if (!wallet || !safeScore) {
-    console.warn("⚠️ Invalid wallet or score:", wallet, score);
+    console.warn("⚠️ Invalid wallet or score:", { wallet, rawScore });
     return;
   }
 
   console.log("📤 Submitting score to Sign Protocol...");
   console.log("🔥 Wallet:", wallet, typeof wallet);
-  console.log("🔥 Raw Score:", score, typeof score);
+  console.log("🔥 Raw Score:", rawScore, typeof rawScore);
   console.log("🔥 safeScore:", safeScore, typeof safeScore);
   console.log("🔥 SignClient:", signClient);
 
   try {
-    const res = await (signClient as any).createAttestation({
-      schemaId: "0x46982", // ✅ Correct schema using fields
+    const payload = {
+      schemaId: "0x46982", // ✅ schema that uses `fields`
       recipients: [wallet],
       fields: {
-        score: safeScore, // ✅ Must be string and match schema exactly
+        score: safeScore, // ✅ should be a plain object like { score: "1234" }
       },
       indexingValue: wallet,
-    });
+    };
 
-    const attestationId = res.attestationId;
+    console.log("📦 Attestation payload:", JSON.stringify(payload));
+
+    const res = await (signClient as any).createAttestation(payload);
+
+    const attestationId = res?.attestationId;
+    if (!attestationId) throw new Error("Attestation failed: Missing ID");
+
     console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
 
     const backendUrl =
@@ -161,7 +169,10 @@ export default function GameBoard() {
       }),
     });
 
-    if (!response.ok) throw new Error(await response.text());
+    if (!response.ok) {
+      const msg = await response.text();
+      throw new Error(`Backend error: ${msg}`);
+    }
 
     console.log("✅ Score saved to backend DB");
   } catch (err) {
