@@ -136,24 +136,22 @@ const submitScore = async () => {
   console.log("🔥 SignClient:", signClient);
 
   try {
-    const fields = {
-      score: safeScore,
-    };
+    const data = [
+      {
+        name: "score",
+        type: "string",
+        value: safeScore,
+      },
+    ];
 
-    console.log("🔥 Fields going to Sign SDK:", fields);
+    console.log("🔥 Data going to Sign SDK:", data);
 
     const res = await (signClient as any).createAttestation({
-  schemaId: "0x4697e",
-  recipients: [wallet],
-  data: [
-    {
-      name: "score",
-      type: "string",
-      value: safeScore, // must be a string like "2256"
-    },
-  ],
-  indexingValue: wallet,
-});
+      schemaId: "0x4697e", // ✅ hex-only
+      recipients: [wallet],
+      data, // ✅ now using proper SDK shape
+      indexingValue: wallet,
+    });
 
     const attestationId = res.attestationId;
     console.log("✅ Score submitted on-chain! Attestation ID:", attestationId);
