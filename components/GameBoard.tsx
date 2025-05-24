@@ -206,7 +206,7 @@ export default function GameBoard() {
   };
 
   const shareToX = () => {
-    const text = `I scored ${score} in 2048 on @Sign Game built by @OxIsrafil.\n\nPowered by Sign Lab & @sign protocol.\nPlay & beat me if you can: https://2048sign.vercel.app/`;
+    const text = `I scored ${score} in 2048 on @Sign Game built by @OxIsrafil.\n\nPowered by Sign Lab & @sign protocol.\nPlay & beat me if you can:\nhttps://2048sign.xyz/`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   };
